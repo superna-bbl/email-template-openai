@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Email Template Generator</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      max-width: 650px;
+      margin: 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 15px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    pre {
+      white-space: pre-wrap;
+      background: #f1f1f1;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+    iframe {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Email Template Generator</h2>
+
+  <input id="company" placeholder="Company Name">
+  <input id="url" placeholder="Company URL">
+  <input id="industry" placeholder="Industry (optional)">
+
+  <select id="dept" onchange="toggleOther()">
+    <option>HR</option>
+    <option>Sales</option>
+    <option>Finance</option>
+    <option>IT</option>
+    <option>Operations</option>
+    <option>Other</option>
+  </select>
+
+  <input id="customDept" placeholder="Custom Department" style="display:none">
+  <input id="subject" placeholder="Subject (optional)">
+
+  <button onclick="generate()">Generate Email</button>
+
+  <h3>Generated HTML Email</h3>
+  <pre id="output"></pre>
+
+  <h3>Email Preview</h3>
+  <iframe
+    id="emailPreview"
+    style="
+      width:100%;
+      height:400px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      background:white;
+    ">
+  </iframe>
+
+</div>
+
+<script>
+function toggleOther() {
+  document.getElementById("customDept").style.display =
+    document.getElementById("dept").value === "Other" ? "block" : "none";
+}
+
+async function generate() {
+  const res = await fetch("http://127.0.0.1:8000/generate-email", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      company_name: company.value,
+      company_url: url.value,
+      industry: industry.value || null,
+      department: dept.value,
+      custom_department: customDept.value || null,
+      subject: subject.value || null
+    })
+  });
+
+  const data = await res.json();
+
+  // Show raw HTML
+  output.textContent = data.html;
+
+  // Render email preview
+  const iframe = document.getElementById("emailPreview");
+  iframe.srcdoc = data.html;
+}
+</script>
+
+</body>
+</html>
